@@ -1,5 +1,5 @@
-import tf from "@tensorflow/tfjs";
-import fs from "fs";
+const tf = require("@tensorflow/tfjs");
+const fs = require("fs");
 
 // Custom Hardcoded Dataset
 const dataset = [
