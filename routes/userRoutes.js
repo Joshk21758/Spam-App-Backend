@@ -1,8 +1,8 @@
-import express from "express";
-import router from express.Router();
-import User from "../models/User";
-import bcrypt from "bcryptjs";
-import jwt from "jsonwebtoken";
+const express = require("express");
+const router = express.Router();
+const User = require("../models/User");
+const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
 
 //register route
 router.post("/register", async (req, res) => {
@@ -19,7 +19,7 @@ router.post("/register", async (req, res) => {
     // Hash the password
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
-   
+
     //save user to DB
     user = await User.create({
       username,
@@ -54,9 +54,10 @@ router.post("/login", async (req, res) => {
     }
 
     // Generate json web token
-    const token = jwt.sign({id: user._id}, process.env.JWT_SECRET, {expiresIn: "3d"});
-    return res.status(200).json({message: "Logged in successfully!", token});
-
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
+      expiresIn: "3d",
+    });
+    return res.status(200).json({ message: "Logged in successfully!", token });
   } catch (err) {
     res.status(500).json({ message: "Failed to Login user" });
   }
@@ -64,9 +65,10 @@ router.post("/login", async (req, res) => {
 
 //Logout route
 router.post("/logout", async (req, res) => {
-  // destroy jwt 
-  res.status(200).json({message: "Logout successful. Delete toekn from client storage"})
-  
+  // destroy jwt
+  res
+    .status(200)
+    .json({ message: "Logout successful. Delete toekn from client storage" });
 });
 
 module.exports = router;
