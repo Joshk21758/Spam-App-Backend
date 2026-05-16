@@ -10,7 +10,7 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "type": "commonJS",
+  "type": "module",
   "dependencies": {
     "@tensorflow/tfjs-node": "^4.22.0",
     "cors": "^2.8.6",
@@ -19,6 +19,7 @@
     "express": "^5.2.1",
     "fs": "^0.0.1-security",
     "helmet": "^8.1.0",
+    "jsonwebtoken": "^9.0.3",
     "mongoose": "^9.1.5",
     "nodemon": "^3.1.11",
     "python-shell": "^5.0.0",
