@@ -1,6 +1,8 @@
 import express from "express";
 import router from express.Router();
 import User from "../models/User";
+import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
 
 //register route
 router.post("/register", async (req, res) => {
@@ -11,22 +13,25 @@ router.post("/register", async (req, res) => {
     //check if user already exists
     let user = await User.findOne({ email });
     if (user) {
-      return res.status(400).json({ message: "User already exists" });
+      return res.status(500).json({ message: "User already exists" });
     }
+
+    // Hash the password
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
+   
     //save user to DB
     user = await User.create({
       username,
       email,
-      password,
+      password: hashedPassword,
     });
 
-    //log user in by setting session
-    req.session.userId = user._id;
-    return res.status(200).json({
+    return res.status(201).json({
       message: "Sucessfully registered user",
     });
   } catch (err) {
-    return res.status(400).json({ message: "Failed to register user" });
+    return res.status(500).json({ message: "Failed to register user" });
   }
 });
 
@@ -39,39 +44,29 @@ router.post("/login", async (req, res) => {
     //find user by email
     const user = await User.findOne({ email });
     if (!user) {
-      return res.status(400).json({ message: "You don't have an Account" });
+      return res.status(400).json({ message: "Invalid user email" });
     }
 
     //compare passwords with hashed passwords
     const isMatch = await user.matchPassword(password);
     if (!isMatch) {
-      return res.status(401).json({ message: "Passwords do not match" });
+      return res.status(401).json({ message: "Invalid email or password" });
     }
 
-    //Login user by setting session
-    req.session.userId = user._id;
-    res.json({
-      id: user._id,
-      email: user.email,
-      message: "Successfully Logged in",
-    });
+    // Generate json web token
+    const token = jwt.sign({id: user._id}, process.env.JWT_SECRET, {expiresIn: "3d"});
+    return res.status(200).json({message: "Logged in successfully!", token});
+
   } catch (err) {
-    res.status(400).json({ message: "Failed to Login user" });
+    res.status(500).json({ message: "Failed to Login user" });
   }
 });
 
 //Logout route
 router.post("/logout", async (req, res) => {
-  //destroy the session data in DB
-  req.session.destroy((err) => {
-    if (err) {
-      return res.status(400).json({ message: "Failed to logout" });
-    }
-
-    //logout user by clearing session cookie
-    res.clearCookie("connect.sid");
-    res.status(200).json({ message: "Logged out successfully" });
-  });
+  // destroy jwt 
+  res.status(200).json({message: "Logout successful. Delete toekn from client storage"})
+  
 });
 
 module.exports = router;
